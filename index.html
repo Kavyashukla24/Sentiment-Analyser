@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 18px;
+            color: #333;
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+        .neutral {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sentiment Analysis</h1>
+        <textarea id="inputText" rows="6" placeholder="Enter text to analyze..."></textarea><br>
+        <button onclick="analyzeText()">Analyze Sentiment</button>
+        <button onclick="resetText()">Reset Text</button>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>Sentiment: <span id="sentiment"></span></h3>
+            <p>Confidence Score: <span id="score"></span></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Function to analyze the sentiment of the entered text
+        function analyzeText() {
+            var text = document.getElementById('inputText').value;
+            if (!text) {
+                alert('Please enter some text!');
+                return;
+            }
+
+            $.ajax({
+                url: '/analyze',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ text: text }),
+                success: function(response) {
+                    var sentiment = response.sentiment;
+                    var score = response.score;
+
+                    // Update the sentiment and score in the result div
+                    $('#sentiment').text(sentiment);
+                    $('#score').text(score.toFixed(4));
+
+                    // Style based on sentiment
+                    $('#result').show();
+                    if (sentiment === 'POSITIVE') {
+                        $('#sentiment').addClass('positive').removeClass('negative neutral');
+                    } else if (sentiment === 'NEGATIVE') {
+                        $('#sentiment').addClass('negative').removeClass('positive neutral');
+                    } else {
+                        $('#sentiment').addClass('neutral').removeClass('positive negative');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        }
+
+        // Function to reset the text area and result display
+        function resetText() {
+            // Clear the text area
+            document.getElementById('inputText').value = '';
+            // Clear the result div
+            $('#result').hide();
+            $('#sentiment').removeClass('positive negative neutral').text('');
+            $('#score').text('');
+        }
+    </script>
+</body>
+</html>
